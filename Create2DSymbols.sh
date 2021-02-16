@@ -25,11 +25,13 @@ echo "license=GPL-3.0"  >> $ff
 echo "provider=AlbrechtL (based on dorin)"  >> $ff
 echo -en '\n\n' >> $ff
 
+mkdir -p plan catalog
+
 cnt=0
 #rm ListOfFile.txt
 OIFS=$IFS
 IFS=$'\n'
-for nn in  `ls plan | sort -V`
+for nn in  `ls originals | sort -V`
 do
 {
 cp originals/$nn catalog/
