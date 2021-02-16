@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: "Symbols-electrical-de"
+
+      - name: Install system packages
+        run: |
+          sudo apt update
+          sudo apt install zip imagemagick
+
+      - name: Create Symbol package
+        run: |
+          cd Symbols-electrical-de
+          ./Create2DSymbols.sh
+           
+      - name: Archive artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Symbols-electrical-de
+          path: Symbols-electrical-de.sh3f
