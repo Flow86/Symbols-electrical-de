@@ -20,7 +20,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt update
-          sudo apt install zip imagemagick
+          sudo apt install zip imagemagick bc
 
       - name: Create Symbol package
         run: |

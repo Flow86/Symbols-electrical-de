@@ -19,10 +19,10 @@ echo -en '\n\n' >> $ff
 
 echo "id=SweetHome3D#2DSymbols"  >> $ff
 echo "name=2DSymbols"  >> $ff
-echo "description= Symbols Catalog for use in 2D plan"  >> $ff
+echo "description= Symbols Catalog for use in 2D+3D plan"  >> $ff
 echo "version=1.5.7"  >> $ff
 echo "license=GPL-3.0"  >> $ff
-echo "provider=AlbrechtL (based on dorin)"  >> $ff
+echo "provider=Flow86 (based on AlbrechtL and dorin)"  >> $ff
 echo -en '\n\n' >> $ff
 
 mkdir -p plan catalog models
@@ -31,7 +31,7 @@ cnt=0
 #rm ListOfFile.txt
 OIFS=$IFS
 IFS=$'\n'
-for nn in  `ls originals | sort -V`
+for nn in `ls originals | grep .png | sort -V`
 do
 {
 cp originals/$nn catalog/
@@ -39,10 +39,27 @@ cp originals/$nn plan/
 cn=catalog/$nn
 pn=plan/$nn
  echo $nn
- { widthOrig=`convert "$pn" -format '%w' info:`
+ {
+   convert -trim "$pn" "$pn"
+   widthOrig=`convert "$pn" -format '%w' info:`
    depthOrig=`convert "$pn" -format '%h' info:`
    width=$[$widthOrig / 13]
    depth=$[$depthOrig / 13]
+   
+   maxsize=100
+   # scale everything to maxsize x maxsize (keeping aspect ratio)
+   while [ $(bc <<< "scale=0; $width / 1") -lt $maxsize ] && [ $(bc <<< "scale=0; $depth / 1") -lt $maxsize ] ; do
+		width=$(bc <<< "scale=2; $width*1.05")
+		depth=$(bc <<< "scale=2; $depth*1.05")
+	done
+   while [ $(bc <<< "scale=0; $width / 1") -gt $maxsize ] || [ $(bc <<< "scale=0; $depth / 1") -gt $maxsize ] ; do
+		width=$(bc <<< "scale=2; $width/1.05")
+		depth=$(bc <<< "scale=2; $depth/1.05")
+	done
+	width=$(bc <<< "scale=0; $width / 1")
+	depth=$(bc <<< "scale=0; $depth / 1")
+   
+   echo $width $depth
 
    # resize catalog icons
    convert -trim "$cn" "$cn"
@@ -81,6 +98,7 @@ cnt=`expr $cnt + 1`
  # Try to display 2D symbols inside the 3D view
  # extent image to make it smaller inside the 3D view
  cp plan/$nn models/
+ convert -trim models/"$nn" models/"$nn"
  convert models/"$nn" -gravity center -background white -extent $[$widthOrig * 2]x$[$depthOrig * 2] models/"$nn"
  convert models/"$nn" -resize "$widthOrig"x"$depthOrig"! models/"$nn"
 
@@ -97,7 +115,7 @@ done
 IFS=$OIFS
 
 mylib=${PWD##*/}.sh3f
-zip -r $mylib . -x *.git*
+zip -r $mylib . -x *.git* -x originals
 mv $mylib ../
 
 
